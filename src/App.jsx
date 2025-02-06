@@ -425,6 +425,20 @@ const Subnettify = () => {
     handleSplit,
   };
 
+  // Avoid early page refresh
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ""; // Necessario per alcuni browser
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   return (
     <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
       <div className="text-center mb-6">
