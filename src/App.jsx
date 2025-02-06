@@ -16,6 +16,7 @@ const Subnettify = () => {
   const [currentIP, setCurrentIP] = useState(0);
   const [grid, setGrid] = useState([]);
   const [activeNetwork, setActiveNetwork] = useState(null);
+  const [cdir, setCdir] = useState("/24");
   const [splitResults, setSplitResults] = useState({});
   const [message, setMessage] = useState("");
   const [msgColor, setMsgColor] = useState("");
@@ -99,12 +100,17 @@ const Subnettify = () => {
   };
 
   const SUBNET_MASKS = {
-    top: { value: "255.255.255.0", networks: [0] },
-    right: { value: "255.255.255.128", networks: [0, 128] },
-    bottom: { value: "255.255.255.192", networks: [0, 64, 128, 192] },
+    top: { value: "255.255.255.0", networks: [0], CDIR: "/24" },
+    right: { value: "255.255.255.128", networks: [0, 128], CDIR: "/25" },
+    bottom: {
+      value: "255.255.255.192",
+      networks: [0, 64, 128, 192],
+      CDIR: "/26",
+    },
     left: {
       value: "255.255.255.224",
       networks: [0, 32, 64, 96, 128, 160, 192, 224],
+      CDIR: "/27",
     },
   };
 
@@ -323,14 +329,14 @@ const Subnettify = () => {
         [side]: { networkID: selectedNetwork, hostID },
       });
       setGrid(newGrid);
-      setMessage(`Corretto! ${currentIP} = ${selectedNetwork} + ${hostID}`);
+      setMessage(
+        `L'IP ${currentIP} rappresenta l'host ${hostID} nella subnet ${selectedNetwork}${cdir}`
+      );
       setMsgColor("text-green-600");
       setScore((prev) => prev + 1);
       setActiveNetwork(null);
     } else {
-      setMessage(
-        "Riprova! Il network ID non è corretto per questa subnet mask."
-      );
+      setMessage("Scegli il network ID corretto per questa subnet mask.");
       setMsgColor("text-red-600");
       setScore((prev) => prev - 1);
     }
@@ -340,11 +346,19 @@ const Subnettify = () => {
     if (splitResults[side]) return;
 
     const networks = SUBNET_MASKS[side].networks;
+    const cdir = SUBNET_MASKS[side].CDIR;
     setActiveNetwork({
       side,
       networks,
       currentIndex: 0,
     });
+    setCdir(cdir);
+    setMessage(
+      `Subnetta l'ultimo byte dell'IP con la subnet mask .${SUBNET_MASKS[
+        side
+      ].networks.at(-1)}`
+    );
+    setMsgColor("text-gray-500");
 
     updateNetworkDisplay(side, 0, networks);
   };
@@ -353,7 +367,7 @@ const Subnettify = () => {
     setGrid(initializeGrid());
     setActiveNetwork(null);
     setSplitResults({});
-    setMessage(`Subnetta l'ultimo byte dell'IP con le diverse maschere!`);
+    setMessage(`Subnetta l'ultimo byte dell'IP con le diverse maschere`);
     setMsgColor("text-gray-500");
   };
 
@@ -453,10 +467,11 @@ const Subnettify = () => {
 
           {/* Top Subnet Mask */}
           <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-mono text-xl p-2 -translate-y-4`}
-            style={{ height: "10px" }}
+            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-4`}
+            style={{ height: "10px", opacity: "0.9" }}
           >
-            255.255.255<span className="font-bold">.0</span>
+            255.255.255
+            <span className="font-bold">.0</span>
           </div>
 
           {/* Main Grid Section */}
@@ -465,9 +480,9 @@ const Subnettify = () => {
             <Controls side="left" {...controlProps} />
 
             {/* Left Subnet Mask */}
-            <div className="pointer-events-none font-mono text-base sm:text-xl relative z-10">
+            <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
               <div
-                className={`pointer-events-none font-mono text-xl`}
+                className={`pointer-events-none text-xl`}
                 style={{
                   position: "absolute",
                   left: "0",
@@ -476,6 +491,7 @@ const Subnettify = () => {
                   transformOrigin: "left center",
                   whiteSpace: "nowrap",
                   zIndex: 10,
+                  opacity: 0.9,
                 }}
               >
                 255.255.255<span className="font-bold">.224</span>
@@ -496,7 +512,11 @@ const Subnettify = () => {
                           ? "ring-2 ring-offset-2 ring-purple-300"
                           : ""
                       }
-                      ${cell === currentIP ? "animate-pulse-slow" : ""}
+                      ${
+                        cell === currentIP && i === 2 && j === 2
+                          ? "animate-pulse-slow"
+                          : ""
+                      }
                     `}
                     onTouchStart={(e) => handleTouchStart(e, i, j)}
                     onTouchMove={handleTouchMove}
@@ -512,9 +532,9 @@ const Subnettify = () => {
             </div>
 
             {/* Right Subnet Mask */}
-            <div className="pointer-events-none font-mono text-base sm:text-xl relative z-10">
+            <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
               <div
-                className={`pointer-events-none font-mono text-xl`}
+                className={`pointer-events-none text-xl`}
                 style={{
                   position: "absolute",
                   right: "0",
@@ -523,6 +543,7 @@ const Subnettify = () => {
                   transformOrigin: "right center",
                   whiteSpace: "nowrap",
                   zIndex: 10,
+                  opacity: 0.9,
                 }}
               >
                 255.255.255<span className="font-bold">.128</span>
@@ -535,8 +556,8 @@ const Subnettify = () => {
 
           {/* Bottom Subnet Mask */}
           <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-mono text-xl p-2 -translate-y-2`}
-            style={{ height: "10px" }}
+            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-3`}
+            style={{ height: "10px", opacity: "0.9" }}
           >
             255.255.255<span className="font-bold">.192</span>
           </div>
