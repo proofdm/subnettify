@@ -10,10 +10,10 @@ const CORRECT_CHOICE_POINTS = 100;
 const Subnettimize = () => {
   const GRID_SIZE = 5;
   const SUBNET_MASKS = [
-    { cidr: "/24", availableHosts: 254, value: "0" },
-    { cidr: "/25", availableHosts: 126, value: "128" },
-    { cidr: "/26", availableHosts: 62, value: "192" },
-    { cidr: "/27", availableHosts: 30, value: "224" },
+    { cidr: "/24", availableHosts: 253, value: "0" },
+    { cidr: "/25", availableHosts: 125, value: "128" },
+    { cidr: "/26", availableHosts: 61, value: "192" },
+    { cidr: "/27", availableHosts: 29, value: "224" },
   ];
 
   const [currentIP, setCurrentIP] = useState(0);
@@ -107,16 +107,18 @@ const Subnettimize = () => {
   const calculateHostID = (ip, networkID) => ip - networkID;
 
   const findOptimalSubnet = (hosts) => {
-    if (hosts > 126) return SUBNET_MASKS[0]; // /24
-    if (hosts > 62) return SUBNET_MASKS[1]; // /25
-    if (hosts > 30) return SUBNET_MASKS[2]; // /26
+    if (hosts > 125) return SUBNET_MASKS[0]; // /24
+    if (hosts > 61) return SUBNET_MASKS[1]; // /25
+    if (hosts > 29) return SUBNET_MASKS[2]; // /26
     return SUBNET_MASKS[3]; // /27
   };
 
   const calculateWastedHosts = (selectedMask, requiredHosts) => {
     if (selectedMask.availableHosts < requiredHosts) {
-      return -requiredHosts; // Negative score for insufficient hosts
+      console.log(requiredHosts, selectedMask.availableHosts);
+      return requiredHosts - selectedMask.availableHosts;
     }
+    console.log(selectedMask.availableHosts, requiredHosts);
     return selectedMask.availableHosts - requiredHosts;
   };
 
@@ -155,47 +157,28 @@ const Subnettimize = () => {
     setGrid(newGrid);
 
     let pointsEarned;
-    if (selectedMask.availableHosts < requiredHosts) {
-      pointsEarned = -Math.abs(wasted);
-      setMessage(
-        `Subnet troppo piccola! Mancano ${Math.abs(
-          wasted
-        )} host. ${pointsEarned} punti`
-      );
-      setMsgColor("text-red-600");
-    } else if (isOptimalChoice) {
-      pointsEarned = CORRECT_CHOICE_POINTS - Math.abs(wasted);
-      setMessage(`Corretto! Sprechi solo ${wasted} host. +100 punti`);
+    if (isOptimalChoice) {
+      pointsEarned = CORRECT_CHOICE_POINTS;
+      setMessage(`Sprechi solo ${wasted} host. +100 punti`);
       setMsgColor("text-green-600");
+    } else if (selectedMask.availableHosts < requiredHosts) {
+      pointsEarned = -Math.abs(wasted);
+      setMessage(`Subnet troppo piccola! Mancano ${wasted} host.`);
+      setMsgColor("text-red-600");
     } else {
       pointsEarned = -Math.abs(wasted);
-      setMessage(
-        `Subnet troppo grande! Sprechi ${wasted} host. ${pointsEarned} punti`
-      );
+      setMessage(`Subnet troppo grande! Sprechi ${wasted} host.`);
       setMsgColor("text-yellow-600");
     }
 
     setScore((prev) => prev + pointsEarned);
-
-    if (selectedMask === optimalMask) {
-      setMessage(
-        `+${pointsEarned} punti! (${Math.abs(wasted)} host inutilizzati)`
-      );
-      setMsgColor("text-green-600");
-    } else if (selectedMask.availableHosts < requiredHosts) {
-      setMessage(`${pointsEarned} punti! Subnet troppo piccola!`);
-      setMsgColor("text-red-600");
-    } else {
-      setMessage(`${pointsEarned} punti! Subnet troppo grande!`);
-      setMsgColor("text-yellow-600");
-    }
 
     // Reset game after short delay
     setTimeout(() => {
       if (isGameActive) {
         resetGame();
       }
-    }, 1500);
+    }, 1800);
   };
 
   const handleTouchStart = (e) => {
@@ -247,7 +230,8 @@ const Subnettimize = () => {
   }, []);
 
   const getCellColor = (value, i, j) => {
-    if (value === currentIP) return "bg-blue-500 text-white";
+    if (value === currentIP && i === 2 && j === 2)
+      return "bg-blue-500 text-white";
     if (value !== null) {
       return i === 1 || i === 3 || j === 1 || j === 3
         ? "bg-green-600 text-white"
