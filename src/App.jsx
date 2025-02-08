@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import SubnettingGames from "./pages/Games";
 import Subnettify from "./pages/Subnettify";
 import Subnettimize from "./pages/Subnettimize";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
