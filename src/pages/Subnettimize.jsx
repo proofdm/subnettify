@@ -308,6 +308,20 @@ const Subnettimize = () => {
     }
   };
 
+  // Avoid early page refresh
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ""; // Necessario per alcuni browser
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   return (
     <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
       <div className="text-center mb-6">
@@ -330,8 +344,12 @@ const Subnettimize = () => {
           <div className="flex gap-4 items-center mt-2">
             {isGameActive ? (
               <div
-                className="flex items-center gap-2 text-xl font-bold text-purple-600"
-                style={{ width: "86.23px" }}
+                className="flex gap-1 text-xl font-bold text-purple-600"
+                style={{
+                  width: "86.23px",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
                 <Timer size={30} />
                 {formatTime(timeLeft)}
@@ -346,6 +364,8 @@ const Subnettimize = () => {
                 Start
               </Button>
             )}
+          </div>
+          <div>
             <div className="flex flex-col items-end">
               <div
                 className="text-sm text-gray-600"

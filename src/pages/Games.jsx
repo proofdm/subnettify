@@ -48,10 +48,6 @@ const SubnettingGames = () => {
                     Dato un IP scegli la rete corretta in ogni subnet mask. Lo
                     stesso IP darà luogo a letture diverse.
                   </p>
-                  <div className="pt-2 text-sm text-gray-500">
-                    Modalità pratica senza limiti di tempo per imparare le basi
-                    del subnetting IP
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -73,20 +69,20 @@ const SubnettingGames = () => {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    Un gioco contro il tempo per imparare a minimizzare gli
-                    sprechi di indirizzi IP.
+                    Gioca contro il tempo e impara a minimizzare gli sprechi di
+                    indirizzi IP con le giuste subnet
                   </p>
                   <ul className="text-sm text-gray-500 space-y-2">
                     <li className="flex items-center gap-2">
                       • Partite da 90 secondi
                     </li>
                     <li className="flex items-center gap-2">
-                      • Scegli la rete CIDR più appropriata usando swipe o
-                      scroll
+                      • Scegli usando swipe e scroll la rete CIDR più
+                      appropriata
                     </li>
                     <li className="flex items-center gap-2">
-                      • 100pt se la subnet minimizza gli sprechi o penalità
-                      degli indirizzi sprecati
+                      • 100pt se la subnet minimizza gli sprechi <br /> o
+                      penalità pari a indirizzi sprecati
                     </li>
                   </ul>
                 </div>
