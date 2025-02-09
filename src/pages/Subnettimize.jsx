@@ -8,6 +8,18 @@ const GAME_DURATION = 90; // seconds
 const CORRECT_CHOICE_POINTS = 100;
 
 const Subnettimize = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 500);
+    };
+
+    checkMobile(); // Check on mount
+    window.addEventListener("resize", checkMobile); // Listen for screen changes
+
+    return () => window.removeEventListener("resize", checkMobile); // Cleanup
+  }, []);
+
   const GRID_SIZE = 5;
   const SUBNET_MASKS = [
     { cidr: "/24", availableHosts: 253, value: "0" },
@@ -74,15 +86,36 @@ const Subnettimize = () => {
   };
 
   const generateNewIP = () => Math.floor(Math.random() * 256);
-  const generateRequiredHosts = () => Math.floor(Math.random() * 252) + 1;
+  const generateRequiredHosts = () => Math.floor(Math.random() * 180) + 1;
+
+  const [visibleMasks, setVisibleMasks] = useState({});
 
   const shuffleMaskPositions = () => {
+    setVisibleMasks({}); // Reset visible masks
     const positions = ["top", "right", "bottom", "left"];
     const shuffled = [...positions].sort(() => Math.random() - 0.5);
     const posMap = {};
     shuffled.forEach((pos, idx) => {
       posMap[pos] = SUBNET_MASKS[idx];
     });
+
+    // Create a map of positions by CIDR to control animation order
+    const positionsByCidr = {};
+    Object.entries(posMap).forEach(([position, mask]) => {
+      positionsByCidr[mask.cidr] = position;
+    });
+
+    // Show masks in CIDR order
+    ["/24", "/25", "/26", "/27"].forEach((cidr, idx) => {
+      const position = positionsByCidr[cidr];
+      setTimeout(() => {
+        setVisibleMasks((prev) => ({
+          ...prev,
+          [position]: true,
+        }));
+      }, (idx + 1) * 50); // 200ms delay between each mask
+    });
+
     return posMap;
   };
 
@@ -115,10 +148,8 @@ const Subnettimize = () => {
 
   const calculateWastedHosts = (selectedMask, requiredHosts) => {
     if (selectedMask.availableHosts < requiredHosts) {
-      console.log(requiredHosts, selectedMask.availableHosts);
       return requiredHosts - selectedMask.availableHosts;
     }
-    console.log(selectedMask.availableHosts, requiredHosts);
     return selectedMask.availableHosts - requiredHosts;
   };
 
@@ -178,7 +209,7 @@ const Subnettimize = () => {
       if (isGameActive) {
         resetGame();
       }
-    }, 1800);
+    }, 1500);
   };
 
   const handleTouchStart = (e) => {
@@ -247,21 +278,38 @@ const Subnettimize = () => {
           side === "left" || side === "right" ? "flex-col" : "flex-row"
         } justify-center gap-2`}
       >
-        <Button
-          onClick={() => handleSplit(side)}
-          disabled={!isGameActive}
-          // className="px-2 sm:px-3 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-black text-xs sm:text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg"
-          style={{ width: "35px" }}
-          className="px-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg w-16 disabled:opacity-50"
-        >
-          Split
-        </Button>
+        {!isMobile && (
+          <Button
+            onClick={() => handleSplit(side)}
+            disabled={!isGameActive}
+            // className="px-2 sm:px-3 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-black text-xs sm:text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg"
+            style={{ width: "35px" }}
+            className="px-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg w-16 disabled:opacity-50"
+          >
+            Split
+          </Button>
+        )}
       </div>
     );
   };
 
+  const getCidrStyle = (cidr) => {
+    switch (cidr) {
+      case "/24":
+        return "text-purple-800";
+      case "/25":
+        return "text-purple-700";
+      case "/26":
+        return "text-purple-600";
+      case "/27":
+        return "text-purple-500";
+      default:
+        return "text-gray-600";
+    }
+  };
+
   return (
-    <Card className="w-full max-w-4xl mx-auto p-4 bg-gradient-to-b from-gray-50 to-white">
+    <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
       <div className="text-center mb-6">
         <div className="flex justify-between items-start pr-2">
           <div className="flex items-center gap-2">
@@ -279,37 +327,54 @@ const Subnettimize = () => {
             </h2>
           </div>
 
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-col items-end">
-              <div className="flex items-center gap-2 text-lg font-bold text-purple-600">
-                <Timer size={20} />
+          <div className="flex gap-4 items-center mt-2">
+            {isGameActive ? (
+              <div
+                className="flex items-center gap-2 text-xl font-bold text-purple-600"
+                style={{ width: "86.23px" }}
+              >
+                <Timer size={30} />
                 {formatTime(timeLeft)}
               </div>
-              <div className="text-sm text-gray-600">
+            ) : (
+              <Button
+                onClick={startGame}
+                disabled={isGameActive}
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
+              >
+                <RefreshCw size={18} className="animate-spin-hover" />
+                Start
+              </Button>
+            )}
+            <div className="flex flex-col items-end">
+              <div
+                className="text-sm text-gray-600"
+                style={{ lineHeight: "20px" }}
+              >
                 Best Score: {bestScore}
               </div>
+              <div
+                className="text-lg font-semibold text-gray-700"
+                style={{ lineHeight: "254x" }}
+              >
+                Score: {score}
+              </div>
             </div>
-
-            <Button
-              onClick={startGame}
-              disabled={isGameActive}
-              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
-            >
-              <RefreshCw size={18} className="animate-spin-hover" />
-              Start
-            </Button>
           </div>
         </div>
 
         <div className="mt-4">
-          <p className="text-lg font-semibold text-gray-700">Score: {score}</p>
-          {isGameActive && (
+          {isGameActive ? (
             <p className="text-lg font-bold text-purple-600 mt-2">
               Host richiesti: {requiredHosts}
             </p>
+          ) : (
+            <p className="text-lg font-bold text-purple-600 mt-2">
+              Host richiesti: _
+            </p>
           )}
           <p
-            className={`text-base font-medium mt-2 ${msgColor} transition-colors duration-300`}
+            className={`text-base font-medium mt-2 ${msgColor} transition-colors duration-150`}
           >
             {message}
           </p>
@@ -329,8 +394,13 @@ const Subnettimize = () => {
 
           {/* Top CIDR */}
           <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl p-2 -translate-y-4`}
-            style={{ height: "10px", opacity: "0.9" }}
+            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl
+              ${getCidrStyle(
+                maskPositions.top?.cidr
+              )} p-2 -translate-y-4 transition-opacity duration-150 ${
+              visibleMasks.top ? "opacity-90" : "opacity-0"
+            }`}
+            style={{ height: "10px" }}
           >
             {maskPositions.top?.cidr}
           </div>
@@ -340,7 +410,13 @@ const Subnettimize = () => {
             <Controls side="left" />
 
             {/* Left CIDR */}
-            <div className="pointer-events-none font-bold text-base sm:text-xl relative z-10">
+            <div
+              className={`pointer-events-none font-bold text-base sm:text-xl relative z-10 ${getCidrStyle(
+                maskPositions.left?.cidr
+              )} transition-opacity duration-150 ${
+                visibleMasks.left ? "opacity-90" : "opacity-0"
+              }`}
+            >
               <div
                 className={`pointer-events-none text-xl`}
                 style={{
@@ -350,8 +426,6 @@ const Subnettimize = () => {
                   transform: "translateY(-50%) rotate(-90deg) translateX(-50%)",
                   transformOrigin: "left center",
                   whiteSpace: "nowrap",
-                  zIndex: 10,
-                  opacity: 0.9,
                 }}
               >
                 {maskPositions.left?.cidr}
@@ -379,7 +453,13 @@ const Subnettimize = () => {
             </div>
 
             {/* Right CIDR */}
-            <div className="pointer-events-none text-base sm:text-xl relative z-10">
+            <div
+              className={`pointer-events-none text-base sm:text-xl relative z-10 ${getCidrStyle(
+                maskPositions.right?.cidr
+              )} transition-opacity duration-150 ${
+                visibleMasks.right ? "opacity-90" : "opacity-0"
+              }`}
+            >
               <div
                 className={`pointer-events-none text-xl font-bold`}
                 style={{
@@ -389,8 +469,6 @@ const Subnettimize = () => {
                   transform: "translateY(-50%) rotate(90deg) translateX(50%)",
                   transformOrigin: "right center",
                   whiteSpace: "nowrap",
-                  zIndex: 10,
-                  opacity: 0.9,
                 }}
               >
                 {maskPositions.right?.cidr}
@@ -398,15 +476,19 @@ const Subnettimize = () => {
             </div>
 
             {/* Right Controls */}
-            <div className="flex items-center ml-2">
+            <div className="flex items-center">
               <Controls side="right" />
             </div>
           </div>
 
           {/* Bottom CIDR */}
           <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl p-2 -translate-y-3`}
-            style={{ height: "10px", opacity: "0.9" }}
+            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl p-2 -translate-y-3 ${getCidrStyle(
+              maskPositions.bottom?.cidr
+            )} transition-opacity duration-150 ${
+              visibleMasks.bottom ? "opacity-90" : "opacity-0"
+            }`}
+            style={{ height: "10px" }}
           >
             {maskPositions.bottom?.cidr}
           </div>

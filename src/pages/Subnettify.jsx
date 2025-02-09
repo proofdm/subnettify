@@ -13,6 +13,18 @@ import {
 } from "lucide-react";
 
 const Subnettify = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 500);
+    };
+
+    checkMobile(); // Check on mount
+    window.addEventListener("resize", checkMobile); // Listen for screen changes
+
+    return () => window.removeEventListener("resize", checkMobile); // Cleanup
+  }, []);
+
   const GRID_SIZE = 5;
   const [currentIP, setCurrentIP] = useState(0);
   const [grid, setGrid] = useState([]);
