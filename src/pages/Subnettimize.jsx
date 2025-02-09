@@ -271,6 +271,14 @@ const Subnettimize = () => {
     return "bg-gray-200";
   };
 
+  const getCellLabel = (value, i, j) => {
+    if (value === currentIP && i === 2 && j === 2) return "IP";
+    if (value !== null) {
+      return i === 1 || i === 3 || j === 1 || j === 3 ? "net" : "host";
+    }
+    return null;
+  };
+
   const Controls = ({ side }) => {
     return (
       <div
@@ -459,13 +467,18 @@ const Subnettimize = () => {
                   <div
                     key={`${i}-${j}`}
                     className={`
-                      h-14 flex items-center justify-center 
+                      relative h-14 flex items-center justify-center 
                       text-lg font-bold rounded-lg
                       ${getCellColor(cell, i, j)}
                       transition-all duration-300
                       ${cell === currentIP ? "animate-pulse-slow" : ""}
                     `}
                   >
+                    {getCellLabel(cell, i, j) && (
+                      <div className="absolute top-0 -translate-y-1 left-1 text-[9px] text-white opacity-70 font-medium">
+                        {getCellLabel(cell, i, j)}
+                      </div>
+                    )}
                     {cell !== null ? cell : ""}
                   </div>
                 ))

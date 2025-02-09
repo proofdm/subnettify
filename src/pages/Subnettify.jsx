@@ -429,6 +429,23 @@ const Subnettify = () => {
     return "bg-gray-200";
   };
 
+  const getCellLabel = (value, i, j) => {
+    // Then proceed with the normal label logic
+    if (value === currentIP && i === 2 && j === 2) return "IP";
+    if (
+      value !== null &&
+      ((i === 1 && j === 2) ||
+        (i === 2 && j === 1) ||
+        (i === 3 && j === 2) ||
+        (i === 2 && j === 3))
+    ) {
+      return "net";
+    } else if (value !== null && !(i === 1 || i === 3 || j === 1 || j === 3)) {
+      return "host";
+    }
+    return null;
+  };
+
   // Define controlProps object with all required props for Controls component
   const controlProps = {
     handleScroll,
@@ -541,19 +558,18 @@ const Subnettify = () => {
                   <div
                     key={`${i}-${j}`}
                     className={`
-                      ${getCellClassNames(cell, i, j)}
-                      transition-all duration-300
-                      ${
-                        isScrollableLine(i, j) && activeNetwork
-                          ? "ring-2 ring-offset-2 ring-purple-300"
-                          : ""
-                      }
-                      ${
-                        cell === currentIP && i === 2 && j === 2
-                          ? "animate-pulse-slow"
-                          : ""
-                      }
-                    `}
+          relative overflow-visible
+          ${getCellClassNames(cell, i, j)}
+          transition-all duration-300
+          ${
+            isScrollableLine(i, j) && activeNetwork
+              ? "ring-2 ring-offset-2 ring-purple-300"
+              : ""
+          }
+          ${
+            cell === currentIP && i === 2 && j === 2 ? "animate-pulse-slow" : ""
+          }
+        `}
                     onTouchStart={(e) => handleTouchStart(e, i, j)}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={(e) => handleTouchEnd(e, i, j)}
@@ -561,6 +577,11 @@ const Subnettify = () => {
                       touchAction: isScrollableLine(i, j) ? "none" : "auto",
                     }}
                   >
+                    {getCellLabel(cell, i, j) && (
+                      <div className="absolute top-1 left-1 text-[9px] text-white opacity-70 font-medium">
+                        {getCellLabel(cell, i, j)}
+                      </div>
+                    )}
                     {cell !== null ? cell : ""}
                   </div>
                 ))
