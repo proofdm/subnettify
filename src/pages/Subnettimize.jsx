@@ -349,10 +349,10 @@ const Subnettimize = () => {
             </h2>
           </div>
 
-          <div className="flex gap-4 items-center mt-2">
-            {isGameActive ? (
+          <div className="flex gap-4 mt-2">
+            <div className="flex flex-col items-center">
               <div
-                className="flex gap-1 text-xl font-bold text-purple-600"
+                className="flex gap-1 text-xl font-bold text-purple-600 mb-0.5"
                 style={{
                   width: "86.23px",
                   justifyContent: "center",
@@ -362,16 +362,15 @@ const Subnettimize = () => {
                 <Timer size={30} />
                 {formatTime(timeLeft)}
               </div>
-            ) : (
-              <Button
-                onClick={startGame}
-                disabled={isGameActive}
-                className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
-              >
-                <RefreshCw size={18} className="animate-spin-hover" />
-                Start
-              </Button>
-            )}
+              {/* {isGameActive && (
+                <Button
+                  onClick={startGame}
+                  className="bg-transparent text-sm text-gray-500 text-[10px] h-4 px-2"
+                >
+                  reset
+                </Button>
+              )} */}
+            </div>
           </div>
           <div>
             <div className="flex flex-col items-end">
@@ -391,16 +390,26 @@ const Subnettimize = () => {
           </div>
         </div>
 
-        <div className="mt-4">
-          {isGameActive ? (
-            <p className="text-lg font-bold text-purple-600 mt-2">
-              Host richiesti: {requiredHosts}
-            </p>
-          ) : (
-            <p className="text-lg font-bold text-purple-600 mt-2">
-              Host richiesti: _
-            </p>
-          )}
+        <div className="mt-4 flex flex-col items-center">
+          <div className="w-full flex justify-center">
+            {isGameActive ? (
+              <p
+                className="text-lg font-bold text-purple-600"
+                style={{ height: "40px" }}
+              >
+                Host richiesti: <span className="text-xl">{requiredHosts}</span>
+              </p>
+            ) : (
+              <Button
+                onClick={startGame}
+                disabled={isGameActive}
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
+              >
+                <RefreshCw size={18} className="animate-spin-hover" />
+                Start
+              </Button>
+            )}
+          </div>
           <p
             className={`text-base font-medium mt-2 ${msgColor} transition-colors duration-150`}
           >

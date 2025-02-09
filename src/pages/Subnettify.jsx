@@ -481,7 +481,7 @@ const Subnettify = () => {
             >
               <ArrowLeft size={16} className="text-purple-600" />
             </Link>
-            <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+            <h2 className="text-3xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
               Subnettify
             </h2>{" "}
           </div>
