@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "./../../components/ui/card";
 import { Button } from "./../../components/ui/button";
 import { RefreshCw, Timer, ArrowLeft } from "lucide-react";
+import MatchAnalysis from "../components/MatchAnalysis";
 
 const GAME_DURATION = 90; // seconds
 const CORRECT_CHOICE_POINTS = 100;
@@ -153,6 +154,8 @@ const Subnettimize = () => {
     return selectedMask.availableHosts - requiredHosts;
   };
 
+  const [gameHistory, setGameHistory] = useState([]);
+
   const handleSplit = (side) => {
     if (!isGameActive) return;
 
@@ -162,6 +165,17 @@ const Subnettimize = () => {
     const hostID = calculateHostID(currentIP, networkID);
     const wasted = calculateWastedHosts(selectedMask, requiredHosts);
     const isOptimalChoice = selectedMask.cidr === optimalMask.cidr;
+
+    const moveData = {
+      ip: currentIP,
+      requiredHosts,
+      optimalCidr: optimalMask.cidr,
+      chosenCidr: selectedMask.cidr,
+      wasOptimal: isOptimalChoice,
+      wastedHosts: Math.abs(wasted),
+    };
+
+    setGameHistory((prev) => [...prev, moveData]);
 
     const newGrid = [...grid];
     const positions = {
@@ -331,38 +345,39 @@ const Subnettimize = () => {
   }, []);
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
-      <div className="text-center mb-6">
-        <div className="flex justify-between items-start pr-2">
-          <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Torna alla home"
-            >
-              <ArrowLeft size={16} className="text-purple-600" />
-            </Link>
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
-              Subnet
-              <br />
-              -timize
-            </h2>
-          </div>
-
-          <div className="flex gap-4 mt-2">
-            <div className="flex flex-col items-center">
-              <div
-                className="flex gap-1 text-xl font-bold text-purple-600 mb-0.5"
-                style={{
-                  width: "86.23px",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+    <>
+      <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-center mb-6">
+          <div className="flex justify-between items-start pr-2">
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Torna alla home"
               >
-                <Timer size={30} />
-                {formatTime(timeLeft)}
-              </div>
-              {/* {isGameActive && (
+                <ArrowLeft size={16} className="text-purple-600" />
+              </Link>
+              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+                Subnet
+                <br />
+                -timize
+              </h2>
+            </div>
+
+            <div className="flex gap-4 mt-2">
+              <div className="flex flex-col items-center">
+                <div
+                  className="flex gap-1 text-xl font-bold text-purple-600 mb-0.5"
+                  style={{
+                    width: "86.23px",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Timer size={30} />
+                  {formatTime(timeLeft)}
+                </div>
+                {/* {isGameActive && (
                 <Button
                   onClick={startGame}
                   className="bg-transparent text-sm text-gray-500 text-[10px] h-4 px-2"
@@ -370,193 +385,199 @@ const Subnettimize = () => {
                   reset
                 </Button>
               )} */}
+              </div>
+            </div>
+            <div>
+              <div className="flex flex-col items-end">
+                <div
+                  className="text-sm text-gray-600"
+                  style={{ lineHeight: "20px" }}
+                >
+                  Best Score: {bestScore}
+                </div>
+                <div
+                  className="text-lg font-semibold text-gray-700"
+                  style={{ lineHeight: "254x" }}
+                >
+                  Score: {score}
+                </div>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="flex flex-col items-end">
-              <div
-                className="text-sm text-gray-600"
-                style={{ lineHeight: "20px" }}
-              >
-                Best Score: {bestScore}
-              </div>
-              <div
-                className="text-lg font-semibold text-gray-700"
-                style={{ lineHeight: "254x" }}
-              >
-                Score: {score}
-              </div>
+
+          <div className="mt-4 flex flex-col items-center">
+            <div className="w-full flex justify-center">
+              {isGameActive ? (
+                <p
+                  className="text-lg font-bold text-purple-600"
+                  style={{ height: "40px" }}
+                >
+                  Host richiesti:{" "}
+                  <span className="text-xl">{requiredHosts}</span>
+                </p>
+              ) : (
+                <Button
+                  onClick={startGame}
+                  disabled={isGameActive}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
+                >
+                  <RefreshCw size={18} className="animate-spin-hover" />
+                  Start
+                </Button>
+              )}
             </div>
+            <p
+              className={`text-base font-medium mt-2 ${msgColor} transition-colors duration-150`}
+            >
+              {message}
+            </p>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col items-center">
-          <div className="w-full flex justify-center">
-            {isGameActive ? (
-              <p
-                className="text-lg font-bold text-purple-600"
-                style={{ height: "40px" }}
-              >
-                Host richiesti: <span className="text-xl">{requiredHosts}</span>
-              </p>
-            ) : (
-              <Button
-                onClick={startGame}
-                disabled={isGameActive}
-                className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
-              >
-                <RefreshCw size={18} className="animate-spin-hover" />
-                Start
-              </Button>
-            )}
-          </div>
-          <p
-            className={`text-base font-medium mt-2 ${msgColor} transition-colors duration-150`}
-          >
-            {message}
-          </p>
-        </div>
-      </div>
+        <CardContent
+          className="relative p-0"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            {/* Top Controls */}
+            <div className="col-span-5 flex justify-center">
+              <Controls side="top" />
+            </div>
 
-      <CardContent
-        className="relative p-0"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div className="grid grid-cols-5 gap-2 sm:gap-3">
-          {/* Top Controls */}
-          <div className="col-span-5 flex justify-center">
-            <Controls side="top" />
-          </div>
-
-          {/* Top CIDR */}
-          <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl
+            {/* Top CIDR */}
+            <div
+              className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl
               ${getCidrStyle(
                 maskPositions.top?.cidr
               )} p-2 -translate-y-4 transition-opacity duration-150 ${
-              visibleMasks.top ? "opacity-90" : "opacity-0"
-            }`}
-            style={{ height: "10px" }}
-          >
-            {maskPositions.top?.cidr}
-          </div>
-
-          <div className="col-span-5 flex items-center gap-4 sm:gap-3">
-            {/* Left Controls */}
-            <Controls side="left" />
-
-            {/* Left CIDR */}
-            <div
-              className={`pointer-events-none font-bold text-base sm:text-xl relative z-10 ${getCidrStyle(
-                maskPositions.left?.cidr
-              )} transition-opacity duration-150 ${
-                visibleMasks.left ? "opacity-90" : "opacity-0"
+                visibleMasks.top ? "opacity-90" : "opacity-0"
               }`}
+              style={{ height: "10px" }}
             >
-              <div
-                className={`pointer-events-none text-xl`}
-                style={{
-                  position: "absolute",
-                  left: "0",
-                  top: "50%",
-                  transform: "translateY(-50%) rotate(-90deg) translateX(-50%)",
-                  transformOrigin: "left center",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {maskPositions.left?.cidr}
-              </div>
+              {maskPositions.top?.cidr}
             </div>
 
-            {/* Main Grid */}
-            <div className="flex-1 grid grid-cols-5 gap-2 sm:gap-3">
-              {grid.map((row, i) =>
-                row.map((cell, j) => (
-                  <div
-                    key={`${i}-${j}`}
-                    className={`
+            <div className="col-span-5 flex items-center gap-4 sm:gap-3">
+              {/* Left Controls */}
+              <Controls side="left" />
+
+              {/* Left CIDR */}
+              <div
+                className={`pointer-events-none font-bold text-base sm:text-xl relative z-10 ${getCidrStyle(
+                  maskPositions.left?.cidr
+                )} transition-opacity duration-150 ${
+                  visibleMasks.left ? "opacity-90" : "opacity-0"
+                }`}
+              >
+                <div
+                  className={`pointer-events-none text-xl`}
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    top: "50%",
+                    transform:
+                      "translateY(-50%) rotate(-90deg) translateX(-50%)",
+                    transformOrigin: "left center",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {maskPositions.left?.cidr}
+                </div>
+              </div>
+
+              {/* Main Grid */}
+              <div className="flex-1 grid grid-cols-5 gap-2 sm:gap-3">
+                {grid.map((row, i) =>
+                  row.map((cell, j) => (
+                    <div
+                      key={`${i}-${j}`}
+                      className={`
                       relative h-14 flex items-center justify-center 
                       text-lg font-bold rounded-lg
                       ${getCellColor(cell, i, j)}
                       transition-all duration-300
                       ${cell === currentIP ? "animate-pulse-slow" : ""}
                     `}
-                  >
-                    {getCellLabel(cell, i, j) && (
-                      <div className="absolute top-0 -translate-y-1 left-1 text-[9px] text-white opacity-70 font-medium">
-                        {getCellLabel(cell, i, j)}
-                      </div>
-                    )}
-                    {cell !== null ? cell : ""}
-                  </div>
-                ))
-              )}
-            </div>
+                    >
+                      {getCellLabel(cell, i, j) && (
+                        <div className="absolute top-0 -translate-y-1 left-1 text-[9px] text-white opacity-70 font-medium">
+                          {getCellLabel(cell, i, j)}
+                        </div>
+                      )}
+                      {cell !== null ? cell : ""}
+                    </div>
+                  ))
+                )}
+              </div>
 
-            {/* Right CIDR */}
-            <div
-              className={`pointer-events-none text-base sm:text-xl relative z-10 ${getCidrStyle(
-                maskPositions.right?.cidr
-              )} transition-opacity duration-150 ${
-                visibleMasks.right ? "opacity-90" : "opacity-0"
-              }`}
-            >
+              {/* Right CIDR */}
               <div
-                className={`pointer-events-none text-xl font-bold`}
-                style={{
-                  position: "absolute",
-                  right: "0",
-                  top: "50%",
-                  transform: "translateY(-50%) rotate(90deg) translateX(50%)",
-                  transformOrigin: "right center",
-                  whiteSpace: "nowrap",
-                }}
+                className={`pointer-events-none text-base sm:text-xl relative z-10 ${getCidrStyle(
+                  maskPositions.right?.cidr
+                )} transition-opacity duration-150 ${
+                  visibleMasks.right ? "opacity-90" : "opacity-0"
+                }`}
               >
-                {maskPositions.right?.cidr}
+                <div
+                  className={`pointer-events-none text-xl font-bold`}
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    top: "50%",
+                    transform: "translateY(-50%) rotate(90deg) translateX(50%)",
+                    transformOrigin: "right center",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {maskPositions.right?.cidr}
+                </div>
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex items-center">
+                <Controls side="right" />
               </div>
             </div>
 
-            {/* Right Controls */}
-            <div className="flex items-center">
-              <Controls side="right" />
+            {/* Bottom CIDR */}
+            <div
+              className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl p-2 -translate-y-3 ${getCidrStyle(
+                maskPositions.bottom?.cidr
+              )} transition-opacity duration-150 ${
+                visibleMasks.bottom ? "opacity-90" : "opacity-0"
+              }`}
+              style={{ height: "10px" }}
+            >
+              {maskPositions.bottom?.cidr}
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="col-span-5 flex justify-center">
+              <Controls side="bottom" />
             </div>
           </div>
+        </CardContent>
 
-          {/* Bottom CIDR */}
-          <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-bold text-xl p-2 -translate-y-3 ${getCidrStyle(
-              maskPositions.bottom?.cidr
-            )} transition-opacity duration-150 ${
-              visibleMasks.bottom ? "opacity-90" : "opacity-0"
-            }`}
-            style={{ height: "10px" }}
-          >
-            {maskPositions.bottom?.cidr}
-          </div>
-
-          {/* Bottom Controls */}
-          <div className="col-span-5 flex justify-center">
-            <Controls side="bottom" />
-          </div>
-        </div>
-      </CardContent>
-
-      <style jsx>{`
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 1;
+        <style jsx>{`
+          @keyframes pulse-slow {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.7;
+            }
           }
-          50% {
-            opacity: 0.7;
+          .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-      `}</style>
-    </Card>
+        `}</style>
+      </Card>
+      {!isGameActive && gameHistory.length > 0 && (
+        <MatchAnalysis moves={gameHistory} />
+      )}
+    </>
   );
 };
 

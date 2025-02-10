@@ -11,6 +11,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
+import BinaryInspector from "../components/BinaryInspector.jsx";
 
 const Subnettify = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -29,7 +30,7 @@ const Subnettify = () => {
   const [currentIP, setCurrentIP] = useState(0);
   const [grid, setGrid] = useState([]);
   const [activeNetwork, setActiveNetwork] = useState(null);
-  const [cdir, setCdir] = useState("/24");
+  const [cidr, setCidr] = useState("/24");
   const [splitResults, setSplitResults] = useState({});
   const [message, setMessage] = useState("");
   const [msgColor, setMsgColor] = useState("");
@@ -113,17 +114,17 @@ const Subnettify = () => {
   };
 
   const SUBNET_MASKS = {
-    top: { value: "255.255.255.0", networks: [0], CDIR: "/24" },
-    right: { value: "255.255.255.128", networks: [0, 128], CDIR: "/25" },
+    top: { value: "255.255.255.0", networks: [0], CIDR: "/24" },
+    right: { value: "255.255.255.128", networks: [0, 128], CIDR: "/25" },
     bottom: {
       value: "255.255.255.192",
       networks: [0, 64, 128, 192],
-      CDIR: "/26",
+      CIDR: "/26",
     },
     left: {
       value: "255.255.255.224",
       networks: [0, 32, 64, 96, 128, 160, 192, 224],
-      CDIR: "/27",
+      CIDR: "/27",
     },
   };
 
@@ -343,7 +344,7 @@ const Subnettify = () => {
       });
       setGrid(newGrid);
       setMessage(
-        `L'IP ${currentIP} rappresenta l'host ${hostID} nella subnet ${selectedNetwork}${cdir}`
+        `L'IP ${currentIP} rappresenta l'host ${hostID} nella subnet ${selectedNetwork}${cidr}`
       );
       setMsgColor("text-green-600");
       setScore((prev) => prev + 1);
@@ -359,13 +360,13 @@ const Subnettify = () => {
     if (splitResults[side]) return;
 
     const networks = SUBNET_MASKS[side].networks;
-    const cdir = SUBNET_MASKS[side].CDIR;
+    const cidr = SUBNET_MASKS[side].CIDR;
     setActiveNetwork({
       side,
       networks,
       currentIndex: 0,
     });
-    setCdir(cdir);
+    setCidr(cidr);
     setMessage(
       `Subnetta l'ultimo byte dell'IP con la subnet mask .${SUBNET_MASKS[
         side
@@ -446,6 +447,10 @@ const Subnettify = () => {
     return null;
   };
 
+  const [inspectedNumber, setInspectedNumber] = useState(null);
+  const [inspectedType, setInspectedType] = useState(null);
+  const [inspectedNetbits, setInspectedNetbits] = useState(null);
+
   // Define controlProps object with all required props for Controls component
   const controlProps = {
     handleScroll,
@@ -470,94 +475,98 @@ const Subnettify = () => {
   }, []);
 
   return (
-    <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
-      <div className="text-center mb-6">
-        <div className="flex justify-between items-start pr-2">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Torna alla home"
-            >
-              <ArrowLeft size={16} className="text-purple-600" />
-            </Link>
-            <h2 className="text-3xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
-              Subnettify
-            </h2>{" "}
-          </div>
-
-          <Button
-            onClick={resetGame}
-            className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
-          >
-            <RefreshCw size={18} className="animate-spin-hover" />
-            IP
-          </Button>
-        </div>
-
-        {/* Score and message below the header */}
-        <div className="mt-4">
-          <p className="text-lg font-semibold text-gray-700">Score: {score}</p>
-          <p
-            className={`text-sm sm:text-base font-medium mt-2 ${msgColor} transition-colors duration-300`}
-          >
-            {message}
-          </p>
-        </div>
-      </div>
-
-      <CardContent className="relative p-0">
-        <div className="grid grid-cols-5 gap-2 sm:gap-3">
-          {/* Top Controls */}
-          <Controls
-            side="top"
-            handleScroll={handleScroll}
-            handleNetworkSelect={handleNetworkSelect}
-            splitResults={splitResults}
-            activeNetwork={activeNetwork}
-            handleSplit={handleSplit}
-          />
-
-          {/* Top Subnet Mask */}
-          <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-4`}
-            style={{ height: "10px", opacity: "0.9" }}
-          >
-            255.255.255
-            <span className="font-bold">.0</span>
-          </div>
-
-          {/* Main Grid Section */}
-          <div className="col-span-5 flex items-center gap-4 sm:gap-3">
-            {/* Left Controls */}
-            <Controls side="left" {...controlProps} />
-
-            {/* Left Subnet Mask */}
-            <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
-              <div
-                className={`pointer-events-none text-xl`}
-                style={{
-                  position: "absolute",
-                  left: "0",
-                  top: "50%",
-                  transform: "translateY(-50%) rotate(-90deg) translateX(-50%)",
-                  transformOrigin: "left center",
-                  whiteSpace: "nowrap",
-                  zIndex: 10,
-                  opacity: 0.9,
-                }}
+    <>
+      <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-center mb-6">
+          <div className="flex justify-between items-start pr-2">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Torna alla home"
               >
-                255.255.255<span className="font-bold">.224</span>
-              </div>
+                <ArrowLeft size={16} className="text-purple-600" />
+              </Link>
+              <h2 className="text-3xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+                Subnettify
+              </h2>{" "}
             </div>
 
-            {/* Grid */}
-            <div className="flex-1 grid grid-cols-5 gap-2 sm:gap-3">
-              {grid.map((row, i) =>
-                row.map((cell, j) => (
-                  <div
-                    key={`${i}-${j}`}
-                    className={`
+            <Button
+              onClick={resetGame}
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 rounded-full px-4 py-2"
+            >
+              <RefreshCw size={18} className="animate-spin-hover" />
+              IP
+            </Button>
+          </div>
+
+          {/* Score and message below the header */}
+          <div className="mt-4">
+            <p className="text-lg font-semibold text-gray-700">
+              Score: {score}
+            </p>
+            <p
+              className={`text-sm sm:text-base font-medium mt-2 ${msgColor} transition-colors duration-300`}
+            >
+              {message}
+            </p>
+          </div>
+        </div>
+
+        <CardContent className="relative p-0">
+          <div className="grid grid-cols-5 gap-2 sm:gap-3">
+            {/* Top Controls */}
+            <Controls
+              side="top"
+              handleScroll={handleScroll}
+              handleNetworkSelect={handleNetworkSelect}
+              splitResults={splitResults}
+              activeNetwork={activeNetwork}
+              handleSplit={handleSplit}
+            />
+
+            {/* Top Subnet Mask */}
+            <div
+              className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-4`}
+              style={{ height: "10px", opacity: "0.9" }}
+            >
+              255.255.255
+              <span className="font-bold">.0</span>
+            </div>
+
+            {/* Main Grid Section */}
+            <div className="col-span-5 flex items-center gap-4 sm:gap-3">
+              {/* Left Controls */}
+              <Controls side="left" {...controlProps} />
+
+              {/* Left Subnet Mask */}
+              <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
+                <div
+                  className={`pointer-events-none text-xl`}
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    top: "50%",
+                    transform:
+                      "translateY(-50%) rotate(-90deg) translateX(-50%)",
+                    transformOrigin: "left center",
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    opacity: 0.9,
+                  }}
+                >
+                  255.255.255<span className="font-bold">.224</span>
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div className="flex-1 grid grid-cols-5 gap-2 sm:gap-3">
+                {grid.map((row, i) =>
+                  row.map((cell, j) => (
+                    <div
+                      key={`${i}-${j}`}
+                      className={`
           relative overflow-visible
           ${getCellClassNames(cell, i, j)}
           transition-all duration-300
@@ -570,94 +579,128 @@ const Subnettify = () => {
             cell === currentIP && i === 2 && j === 2 ? "animate-pulse-slow" : ""
           }
         `}
-                    onTouchStart={(e) => handleTouchStart(e, i, j)}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={(e) => handleTouchEnd(e, i, j)}
-                    style={{
-                      touchAction: isScrollableLine(i, j) ? "none" : "auto",
-                    }}
-                  >
-                    {getCellLabel(cell, i, j) && (
-                      <div className="absolute top-1 left-1 text-[9px] text-white opacity-70 font-medium">
-                        {getCellLabel(cell, i, j)}
-                      </div>
-                    )}
-                    {cell !== null ? cell : ""}
-                  </div>
-                ))
-              )}
-            </div>
+                      onTouchStart={(e) => handleTouchStart(e, i, j)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={(e) => handleTouchEnd(e, i, j)}
+                      style={{
+                        touchAction: isScrollableLine(i, j) ? "none" : "auto",
+                      }}
+                      onClick={() => {
+                        if (cell !== null) {
+                          // Determine the type based on cell position and value
+                          let type, netbits;
+                          if (cell === currentIP && i === 2 && j === 2) {
+                            type = "ip";
+                          } else if (i === 1 || i === 3 || j === 1 || j === 3) {
+                            type = "net";
+                          } else if (cell !== null) {
+                            type = "host";
+                          }
 
-            {/* Right Subnet Mask */}
-            <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
-              <div
-                className={`pointer-events-none text-xl`}
-                style={{
-                  position: "absolute",
-                  right: "0",
-                  top: "50%",
-                  transform: "translateY(-50%) rotate(90deg) translateX(50%)",
-                  transformOrigin: "right center",
-                  whiteSpace: "nowrap",
-                  zIndex: 10,
-                  opacity: 0.9,
-                }}
-              >
-                255.255.255<span className="font-bold">.128</span>
+                          if (i === 2 && j < 2) {
+                            netbits = 3;
+                          } else if (i === 2 && j > 2) {
+                            netbits = 1;
+                          } else if (j === 2 && i > 2) {
+                            netbits = 2;
+                          } else {
+                            netbits = 0;
+                          }
+
+                          // Update the inspector state
+                          setInspectedNumber(cell);
+                          setInspectedType(type);
+                          setInspectedNetbits(netbits);
+                        }
+                      }}
+                    >
+                      {getCellLabel(cell, i, j) && (
+                        <div className="absolute top-1 left-1 text-[9px] text-white opacity-70 font-medium">
+                          {getCellLabel(cell, i, j)}
+                        </div>
+                      )}
+                      {cell !== null ? cell : ""}
+                    </div>
+                  ))
+                )}
               </div>
+
+              {/* Right Subnet Mask */}
+              <div className="pointer-events-none font-light text-base sm:text-xl relative z-10">
+                <div
+                  className={`pointer-events-none text-xl`}
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    top: "50%",
+                    transform: "translateY(-50%) rotate(90deg) translateX(50%)",
+                    transformOrigin: "right center",
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    opacity: 0.9,
+                  }}
+                >
+                  255.255.255<span className="font-bold">.128</span>
+                </div>
+              </div>
+
+              {/* Right Controls */}
+              <Controls side="right" {...controlProps} />
             </div>
 
-            {/* Right Controls */}
-            <Controls side="right" {...controlProps} />
+            {/* Bottom Subnet Mask */}
+            <div
+              className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-3`}
+              style={{ height: "10px", opacity: "0.9" }}
+            >
+              255.255.255<span className="font-bold">.192</span>
+            </div>
+
+            {/* Bottom Controls */}
+            <Controls side="bottom" {...controlProps} />
           </div>
+        </CardContent>
 
-          {/* Bottom Subnet Mask */}
-          <div
-            className={`col-span-5 flex justify-center align-items-center pointer-events-none font-light text-xl p-2 -translate-y-3`}
-            style={{ height: "10px", opacity: "0.9" }}
-          >
-            255.255.255<span className="font-bold">.192</span>
-          </div>
-
-          {/* Bottom Controls */}
-          <Controls side="bottom" {...controlProps} />
-        </div>
-      </CardContent>
-
-      {/* Add custom keyframes for animations */}
-      <style jsx>{`
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 1;
+        {/* Add custom keyframes for animations */}
+        <style jsx>{`
+          @keyframes pulse-slow {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.7;
+            }
           }
-          50% {
-            opacity: 0.7;
+          @keyframes spin-hover {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
           }
-        }
-        @keyframes spin-hover {
-          0% {
-            transform: rotate(0deg);
+          .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
-          100% {
-            transform: rotate(360deg);
+          .animate-spin-hover {
+            transition: transform 0.3s ease;
           }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .animate-spin-hover {
-          transition: transform 0.3s ease;
-        }
-        button:hover .animate-spin-hover {
-          animation: spin-hover 1s linear infinite;
-        }
-      `}</style>
-    </Card>
+          button:hover .animate-spin-hover {
+            animation: spin-hover 1s linear infinite;
+          }
+        `}</style>
+      </Card>
+      <BinaryInspector
+        number={inspectedNumber}
+        type={inspectedType}
+        currentIP={currentIP}
+        netbits={inspectedNetbits}
+      />
+    </>
   );
 };
 
-// Update Controls component styling
 const Controls = ({
   side,
   handleScroll,
