@@ -4,6 +4,7 @@ import { Card, CardContent } from "./../../components/ui/card";
 import { Button } from "./../../components/ui/button";
 import { RefreshCw, Timer, ArrowLeft } from "lucide-react";
 import MatchAnalysis from "../components/MatchAnalysis";
+import ScoreCelebration from "../components/ScoreCelebration";
 
 const GAME_DURATION = 90; // seconds
 const CORRECT_CHOICE_POINTS = 100;
@@ -42,6 +43,7 @@ const Subnettimize = () => {
   const [maskPositions, setMaskPositions] = useState({});
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const touchStartRef = useRef(null);
   const timerRef = useRef(null);
 
@@ -80,6 +82,10 @@ const Subnettimize = () => {
     if (score > bestScore) {
       setBestScore(score);
       localStorage.setItem("subnettimize_bestScore", score.toString());
+    }
+
+    if (score >= 1000) {
+      setShowCelebration(true);
     }
 
     setMessage(`Game Over! Punteggio finale: ${score}`);
@@ -346,7 +352,13 @@ const Subnettimize = () => {
 
   return (
     <>
-      <Card className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white">
+      {showCelebration && (
+        <ScoreCelebration onClose={() => setShowCelebration(false)} />
+      )}
+      <Card
+        className="w-full max-w-4xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white"
+        style={{ paddingBottom: "20px" }}
+      >
         <div className="text-center mb-6">
           <div className="flex justify-between items-start pr-2">
             <div className="flex items-center gap-2">

@@ -9,7 +9,7 @@ const MatchAnalysis = ({ moves }) => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-4">
+    <Card className="w-full max-w-4xl mx-auto mt-0 bg-gradient-to-b from-gray-100 to-white">
       <CardContent className="p-4">
         <h3 className="text-xl font-bold text-purple-600 mb-4">
           Match Analysis
