@@ -12,6 +12,7 @@ function App() {
       <Route path="/" element={<SubnettingGames />} />
       <Route path="/subnettify" element={<Subnettify />} />
       <Route path="/subnettimize" element={<Subnettimize />} />
+      <Analytics />
     </Routes>
   );
 }
