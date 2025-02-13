@@ -8,12 +8,14 @@ import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<SubnettingGames />} />
-      <Route path="/subnettify" element={<Subnettify />} />
-      <Route path="/subnettimize" element={<Subnettimize />} />
+    <>
+      <Routes>
+        <Route path="/" element={<SubnettingGames />} />
+        <Route path="/subnettify" element={<Subnettify />} />
+        <Route path="/subnettimize" element={<Subnettimize />} />
+      </Routes>
       <Analytics />
-    </Routes>
+    </>
   );
 }
 
