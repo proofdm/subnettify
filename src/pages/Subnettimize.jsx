@@ -8,6 +8,7 @@ import ScoreCelebration from "../components/ScoreCelebration";
 
 const GAME_DURATION = 90; // seconds
 const CORRECT_CHOICE_POINTS = 100;
+const IS_PRESENT_POPUP = false;
 const SCORE_TRESHOLD = 800; //for the popup
 
 const Subnettimize = () => {
@@ -85,7 +86,7 @@ const Subnettimize = () => {
       localStorage.setItem("subnettimize_bestScore", score.toString());
     }
 
-    if (score >= SCORE_TRESHOLD) {
+    if (score >= SCORE_TRESHOLD && IS_PRESENT_POPUP) {
       setShowCelebration(true);
     }
 
