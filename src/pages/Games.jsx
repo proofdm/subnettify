@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./../../components/ui/card";
-import { Network, Timer, ArrowRight } from "lucide-react";
+import { Network, Timer, ArrowRight, Binary, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 const TerminalText = ({ text, speed = 40 }) => {
   const [position, setPosition] = useState(0);
@@ -179,6 +179,39 @@ const SubnettingGames = () => {
                     <li className="flex items-center gap-2">
                       • 100pt se la subnet minimizza gli sprechi <br /> o
                       penalità pari a indirizzi sprecati
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Storynet Card */}
+          <Link to="/storynet" className="block group">
+            <Card className="h-full relative overflow-hidden hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-blue-50 hover:to-blue-100 cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 group-hover:text-blue-600 transition-colors">
+                  <BookOpen className="h-6 w-6 text-blue-500" />
+                  Storynet
+                  <ArrowRight className="h-5 w-5 ml-auto transition-transform transform group-hover:translate-x-1" />
+                </CardTitle>
+                <CardDescription>
+                  Racconta quello che puoi dire a partire da un indirizzo IP
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Data un'IP con notazione CIDR, calcola subnet mask e ID
+                    della subnet
+                  </p>
+                  <ul className="text-sm text-gray-500 space-y-2">
+                    <li className="flex items-center gap-2">
+                      • Visualizzazione binaria e decimale
+                    </li>
+                    <li className="flex items-center gap-2">
+                      • Video su come raccontare argomenti e storie in modo
+                      interessante
                     </li>
                   </ul>
                 </div>
